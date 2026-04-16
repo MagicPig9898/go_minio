@@ -7,6 +7,7 @@
 - 上传本地文件 API
 - 上传 `io.Reader` 资源 API
 - 获取对象资源 API
+- 获取obj_url API
 
 
 

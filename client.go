@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -162,6 +163,36 @@ func (c *Client) GetObject(ctx context.Context, bucket, key string) (*minio.Obje
 	}
 
 	return object, nil
+}
+
+// GetObjectURL 生成对象的预签名访问链接，可直接用于浏览器打开或 <img src="">。
+// expires 为链接有效期，最大 7 天，最小 1 秒。
+func (c *Client) GetObjectURL(ctx context.Context, bucket, key string, expires time.Duration) (string, error) {
+	if err := c.validate(); err != nil {
+		return "", err
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	bucketName := strings.TrimSpace(bucket)
+	if bucketName == "" {
+		return "", errors.New("bucket name 不能为空")
+	}
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return "", errors.New("object key 不能为空")
+	}
+	if expires <= 0 {
+		return "", errors.New("expires 必须大于 0")
+	}
+
+	u, err := c.client.PresignedGetObject(ctx, bucketName, key, expires, nil)
+	if err != nil {
+		return "", fmt.Errorf("生成预签名链接失败: %w", err)
+	}
+
+	return u.String(), nil
 }
 
 func buildObjectName(prefix string, fileName string) (string, error) {

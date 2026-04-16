@@ -3,6 +3,7 @@ package gominio
 import (
 	"context"
 	"testing"
+	"time"
 
 	minio "github.com/minio/minio-go/v7"
 )
@@ -91,5 +92,26 @@ func TestUpGetObject(t *testing.T) {
 		}
 		t.Logf("info: %v", info)
 		obj.Close()
+	})
+}
+
+func TestUpObjectURL(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		client, err := NewClient(Config{
+			Endpoint:        "127.0.0.1:9000",
+			AccessKeyID:     "admin",
+			SecretAccessKey: "12345678",
+			UseSSL:          false,
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		ctx := context.Background()
+		url, err := client.GetObjectURL(ctx, "test", "images/mermaid_20260325170932.png", 10*time.Second)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		t.Logf("info: %v", url)
 	})
 }
